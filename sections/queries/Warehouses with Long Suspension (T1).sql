@@ -1,0 +1,10 @@
+
+SHOW WAREHOUSES
+;
+SELECT "name" AS WAREHOUSE_NAME
+      ,"size" AS WAREHOUSE_SIZE
+  FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+ WHERE "auto_suspend" >= 3600  // 3600 seconds = 1 hour
+;
+
+

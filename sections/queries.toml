@@ -1,0 +1,237 @@
+# Note that Streamlit doesn't re-read this file with every rerun as it's kept in Session State - you will need to refresh the page.
+[demo]
+    [demo."Warehouses without Resource Monitors (T1)"]
+        query_file = "./sections/queries/Warehouses without Resource Monitors (T1).sql"
+        description = """Identifies all warehouses without resource monitors in place.  Resource monitors provide the ability to set limits on credits consumed against a warehouse during a specific time interval or date range.  This can help prevent certain warehouses from unintentionally consuming more credits than typically expected."""
+        interpretation = """Warehouses without resource monitors in place could be prone to excessive costs if a warehouse consumes more credits than anticipated.  Leverage the results of this query to identify the warehouses that should have resource monitors in place to prevent future runaway costs."""
+        only_show_last = true
+[demo."Top 50 Queries that Scanned the Most Data (T2)"]
+        query_file = "./sections/queries/Top 50 Queries that Scanned the Most Data (T2).sql"
+        description = """Looks at the top 50 queries that scan the largest number of micro partitions"""
+        interpretation = """Is there an opportunity to optimize with clustering or upsize the warehouse?"""
+        default_x = "QUERY_EXECUTION_TIME_SECONDS"
+        default_y = "PARTITIONS_PCT"
+        default_z = ["PARTITIONS_TOTAL", "QUERY_PROFILE_URL", "QUERY_TEXT"]
+        default_mode = "chart"
+    [demo."AutoClustering Cost History (by Day by Object) (T3)"]
+        query_file = "./sections/queries/AutoClustering Cost History (by Day by Object) (T3).sql"
+        description = """Full list of tables with auto-clustering and the volume of credits consumed via the service over the last 6 months, broken out by day."""
+        interpretation = """Look for irregularities in the credit consumption or consistently high consumption"""
+        default_x = "DATE"
+        default_y = "CREDITS_USED"
+        default_z = ["DATABASE_NAME","SCHEMA_NAME","TABLE_NAME"]
+        default_mode = "chart"
+    [demo."Warehouses with High Cloud Services Usage (T2)"]
+        query_file = "./sections/queries/Warehouses with High Cloud Services Usage (T2).sql"
+        description = """Shows the warehouses that are not using enough compute to cover the cloud services portion of compute, ordered by the ratio of cloud services to total compute"""
+        interpretation = """Focus on Warehouses that are using a high volume and ratio of cloud services compute. Investigate why this is the case to reduce overall cost (might be cloning, listing files in S3, partner tools setting session parameters, etc.).  The goal to reduce cloud services credit consumption is to aim for cloud services credit to be less than 10% of overall credits."""
+[setup]
+    [setup."Warehouses without Auto-Resume (T1)"]
+        query_file = "./sections/queries/Warehouses without Auto-Resume (T1).sql"
+        description = """Identifies all warehouses that do not have auto-resume enabled.  Enabling this feature will automatically resume a warehouse any time a query is submitted against that specific warehouse. By default, all warehouses have auto-resume enabled."""
+        interpretation = """Make sure all warehouses are set to auto resume.  If you are going to implement auto suspend and proper timeout limits, this is a must or users will not be able to query the system."""
+        only_show_last = true
+    [setup."Warehouses without Auto-Suspend (T1)"]
+        query_file = "./sections/queries/Warehouses without Auto-Suspend (T1).sql"
+        description = """Identifies all warehouses that do not have auto-suspend enabled.  Enabling this feature will ensure that warehouses become suspended after a specific amount of inactive time in order to prevent runaway costs.  By default, all warehouses have auto-suspend enabled."""
+        interpretation = """Make sure all warehouses are set to auto suspend. This way when they are not processing queries your compute footprint will shrink and thus your credit burn."""
+    [setup."Warehouses with Long Suspension (T1)"]
+        query_file = "./sections/queries/Warehouses with Long Suspension (T1).sql"
+        description = """Identifies warehouses that have the longest setting for automatic suspension after a period of no activity on that warehouse."""
+        interpretation = """All warehouses should have an appropriate setting for automatic suspension for the workload.
+
+        – For Tasks, Loading and ETL/ELT warehouses set to immediate suspension.
+
+        – For BI and SELECT query warehouses set to 10 minutes for suspension to keep data caches warm for end users
+
+        – For DevOps, DataOps and Data Science warehouses set to 5 minutes for suspension as warm cache is not as important to ad-hoc and highly unique queries."""
+    [setup."Warehouses without Resource Monitors (T1)"]
+        query_file = "./sections/queries/Warehouses without Resource Monitors (T1).sql"
+        description = """Identifies all warehouses without resource monitors in place.  Resource monitors provide the ability to set limits on credits consumed against a warehouse during a specific time interval or date range.  This can help prevent certain warehouses from unintentionally consuming more credits than typically expected."""
+        interpretation = """Warehouses without resource monitors in place could be prone to excessive costs if a warehouse consumes more credits than anticipated.  Leverage the results of this query to identify the warehouses that should have resource monitors in place to prevent future runaway costs."""
+    [setup."User Segmentation (T1)"]
+        query_file = "./sections/queries/User Segmentation (T1).sql"
+        description = """Lists out all warehouses that are used by multiple ROLEs in Snowflake and returns the average execution time  and count of all queries executed by each ROLE in each warehouse."""
+        interpretation = """If execution times or query counts across roles within a single warehouse are wildly different it might be worth segmenting those users into separate warehouses and configuring each warehouse to meet the specific needs of each workload"""
+    [setup."Idle Users (T2)"]
+        query_file = "./sections/queries/Idle Users (T2).sql"
+        description = """Users in the Snowflake platform that have not logged in in the last 30 days"""
+        interpretation = """Should these users be removed or more formally onboarded?"""
+    [setup."Users Never Logged In (T2)"]
+        query_file = "./sections/queries/Users Never Logged In (T2).sql"
+        description = """Users that have never logged in to Snowflake"""
+        interpretation = """Should these users be removed or more formally onboarded?"""
+    [setup."Idle Roles (T2)"]
+        query_file = "./sections/queries/Idle Roles (T2).sql"
+        description = """Roles that have not been used in the last 30 days"""
+        interpretation = """Are these roles necessary? Should these roles be cleaned up?"""
+    [setup."Idle Warehouses (T2)"]
+        query_file = "./sections/queries/Idle Warehouses (T2).sql"
+        description = """Warehouses that have not been used in the last 30 days"""
+        interpretation = """Should these warehouses be removed? Should the users of these warehouses be enabled/onboarded?"""
+    [setup."Set Statement Timeouts (T2)"]
+        query_file = "./sections/queries/Set Statement Timeouts (T2).sql"
+        description = """Statement timeouts provide additional controls around how long a query is able to run before cancelling it. Using this feature will ensure that any queries that get hung up for extended periods of time will not cause excessive consumption of credits.
+
+        Show parameter settings at the Account, Warehouse, and User Session levels."""
+        interpretation = """This parameter is set at the account level by default.  When the parameter is also set for both a warehouse and a user session, the lowest non-zero value is enforced."""
+    [setup."Stale Table Streams (T2)"]
+        query_file = "./sections/queries/Stale Table Streams (T2).sql"
+        description = """Indicates whether the offset for the stream is positioned at a point earlier than the data retention period for the table (or 14 days, whichever period is longer). Change data capture (CDC) activity cannot be returned for the table."""
+        interpretation = """To return CDC activity for the table, recreate the stream. To prevent a stream from becoming stale, consume the stream records within a transaction during the retention period for the table."""
+    [setup."Failed Tasks (T2)"]
+        query_file = "./sections/queries/Failed Tasks (T2).sql"
+        description = """Returns a list of task executions that failed."""
+        interpretation = """Revisit these task executions to resolve the errors."""
+    [setup."Long Running Tasks (T2)"]
+        query_file = "./sections/queries/Long Running Tasks (T2).sql"
+        description = """Returns an ordered list of the longest running tasks"""
+        interpretation = """revisit task execution frequency or the task code for optimization"""
+[usage]
+    [usage."Top 50 Queries that Scanned the Most Data (T2)"]
+        query_file = "./sections/queries/Top 50 Queries that Scanned the Most Data (T2).sql"
+        description = """Looks at the top 50 queries that scan the largest number of micro partitions"""
+        interpretation = """Is there an opportunity to optimize with clustering or upsize the warehouse?"""
+        default_x = "QUERY_EXECUTION_TIME_SECONDS"
+        default_y = "PARTITIONS_PCT"
+        default_z = ["PARTITIONS_TOTAL", "QUERY_PROFILE_URL", "QUERY_TEXT"]
+        default_mode = "chart"
+    [usage."Most Expensive Queries"]
+        query_file = "sections/queries/most_expensive_queries.sql"
+        default_x = "QUERY_ID"
+        default_y = "EXECUTION_TIME_SECONDS"
+        default_z = ["QU", "START_TIME"]
+    [usage."Credit Consumption by Warehouse (T1)"]
+        query_file = "./sections/queries/Credit Consumption by Warehouse (T1).sql"
+        description = """Shows the total credit consumption for each warehouse over a specific time period."""
+        interpretation = """Are there specific warehouses that are consuming more credits than the others?  Should they be?  Are there specific warehouses that are consuming more credits than anticipated for that warehouse?"""
+    [usage."Average Hour-by-Hour Consumption Over the Past 7 Days (T1)"]
+        query_file = "./sections/queries/Average Hour-by-Hour Consumption Over the Past 7 Days (T1).sql"
+        description = """Shows the total credit consumption on an hourly basis to help understand consumption trends (peaks, valleys) over the past 7 days."""
+        interpretation = """At which points of the day are we seeing spikes in our consumption?  Is that expected?"""
+    [usage."Average Query Volume by Hour (Past 7 Days) (T1)"]
+        query_file = "./sections/queries/Average Query Volume by Hour (Past 7 Days) (T1).sql"
+        description = """Shows average number of queries run on an hourly basis to help better understand typical query activity."""
+        interpretation = """How many queries are being run on an hourly basis?  Is this more or less than we anticipated?  What could be causing this?"""
+    [usage."Warehouse Utilization Over 7 Day Average (T1)"]
+        query_file = "./sections/queries/Warehouse Utilization Over 7 Day Average (T1).sql"
+        description = """This query returns the daily average of credit consumption grouped by week and warehouse."""
+        interpretation = """Use this to identify anomolies in credit consumption for warehouses across weeks from the past year."""
+    [usage."Forecasting Usage and Billing (T1)"]
+        query_file = "./sections/queries/Forecasting Usage and Billing (T1).sql"
+        description = """This query provides three distinct consumption metrics for each day of the contract term. (1) the contracted consumption is the dollar amount consumed if usage was flat for the entire term. (2) the actual consumption pulls from the various usage views and aggregates dollars at a day level. (3) the forecasted consumption creates a straight line regression from the actuals to project go-forward consumption."""
+        interpretation = """This data should be mapped as line graphs with a running total calculation to estimate future forecast against the contract amount."""
+    [usage."Partner Tools Consuming Credits (T1)"]
+        query_file = "./sections/queries/Partner Tools Consuming Credits (T1).sql"
+        description = """Identifies which of Snowflake's partner tools/solutions (BI, ETL, etc.) are consuming the most credits."""
+        interpretation = """Are there certain partner solutions that are consuming more credits than anticipated?  What is the reasoning for this?"""
+    [usage."Credit Consumption by User (T1)"]
+        query_file = "./sections/queries/Credit Consumption by User (T1).sql"
+        description = """Identifies which users are consuming the most credits within your Snowflake environment."""
+        interpretation = """Are there certain users that are consuming more credits than they should? What is the purpose behind this additional usage?"""
+    [usage."Queries by # of Times Executed and Execution Time (T2)"]
+        query_file = "./sections/queries/Queries by # of Times Executed and Execution Time (T2).sql"
+        description = """Are there any queries that get executed a ton?? how much execution time do they take up?"""
+        interpretation = """Opportunity to materialize the result set as a table?"""
+    [usage."Top 50 Longest Running Queries (T2)"]
+        query_file = "./sections/queries/Top 50 Longest Running Queries (T2).sql"
+        description = """Looks at the top 50 longest running queries to see if there are patterns"""
+        interpretation = """Is there an opportunity to optimize with clustering or upsize the warehouse?"""
+
+    [usage."Queries by Execution Buckets over the Past 7 Days (T2)"]
+        query_file = "./sections/queries/Queries by Execution Buckets over the Past 7 Days (T2).sql"
+        description = """Group the queries for a given warehouse by execution time buckets"""
+        interpretation = """This is an opportunity to identify query SLA trends and make a decision to downsize a warehouse, upsize a warehouse, or separate out some queries to another warehouse"""
+    [usage."Warehouses with High Cloud Services Usage (T2)"]
+        query_file = "./sections/queries/Warehouses with High Cloud Services Usage (T2).sql"
+        description = """Shows the warehouses that are not using enough compute to cover the cloud services portion of compute, ordered by the ratio of cloud services to total compute"""
+        interpretation = """Focus on Warehouses that are using a high volume and ratio of cloud services compute. Investigate why this is the case to reduce overall cost (might be cloning, listing files in S3, partner tools setting session parameters, etc.).  The goal to reduce cloud services credit consumption is to aim for cloud services credit to be less than 10% of overall credits."""
+    [usage."Warehouse Utilization (T2)"]
+        query_file = "./sections/queries/Warehouse Utilization (T2).sql"
+        description = """This query is designed to give a rough idea of how busy Warehouses are compared to the credit consumption per hour. It will show the end user the number of credits consumed, the number of queries executed and the total execution time of those queries in each hour window."""
+        interpretation = """This data can be used to draw correlations between credit consumption and the #/duration of query executions. The more queries or higher query duration for the fewest number of credits may help drive more value per credit."""
+[billing]
+    [billing."Billing Metrics (T1)"]
+        query_file = "./sections/queries/Billing Metrics (T1).sql"
+        description = """Identify key metrics as it pertains to total compute costs from warehouses,
+        serverless features, and total storage costs."""
+        interpretation = """Where are we seeing most of our costs coming from (compute, serverless, storage)?  Are seeing excessive costs in any of those categories that are above expectations?"""
+    [billing."Most Expensive Queries (T2)"]
+        query_file = "./sections/queries/Most Expensive Queries (T2).sql"
+        description = """This query orders the most expensive queries from the last 30 days. It takes into account the warehouse size, assuming that a 1 minute query on larger warehouse is more expensive than a 1 minute query on a smaller warehouse"""
+        interpretation = """This is an opportunity to evaluate expensive queries and take some action. The admin could:
+
+        -look at the query profile
+
+        -contact the user who executed the query
+
+        -take action to optimize these queries"""
+    [billing."Average Cost per Query by Warehouse (T2)"]
+        query_file = "./sections/queries/Average Cost per Query by Warehouse (T2).sql"
+        description = """This summarize the query activity and credit consumption per warehouse over the last month. The query also includes the ratio of queries executed to credits consumed on the warehouse"""
+        interpretation = """Highlights any scenarios where warehouse consumption is significantly out of line with the number of queries executed. Maybe auto-suspend needs to be adjusted or warehouses need to be consolidated."""
+    [billing."AutoClustering Cost History (by Day by Object) (T3)"]
+        query_file = "./sections/queries/AutoClustering Cost History (by Day by Object) (T3).sql"
+        description = """Full list of tables with auto-clustering and the volume of credits consumed via the service over the last 30 days, broken out by day."""
+        interpretation = """Look for irregularities in the credit consumption or consistently high consumption"""
+    [billing."Materialized Views Cost History (by Day by Object) (T3)"]
+        query_file = "./sections/queries/Materialized Views Cost History (by Day by Object) (T3).sql"
+        description = """Full list of materialized views and the volume of credits consumed via the service over the last 30 days, broken out by day."""
+        interpretation = """Look for irregularities in the credit consumption or consistently high consumption"""
+    [billing."Search Optimization Cost History (by Day by Object) (T3)"]
+        query_file = "./sections/queries/Search Optimization Cost History (by Day by Object) (T3).sql"
+        description = """Full list of tables with search optimization and the volume of credits consumed via the service over the last 30 days, broken out by day."""
+        interpretation = """Look for irregularities in the credit consumption or consistently high consumption"""
+    [billing."Snowpipe Cost History (by Day by Object) (T3)"]
+        query_file = "./sections/queries/Snowpipe Cost History (by Day by Object) (T3).sql"
+        description = """Full list of pipes and the volume of credits consumed via the service over the last 30 days, broken out by day."""
+        interpretation = """Look for irregularities in the credit consumption or consistently high consumption"""
+    [billing."Replication Cost History (by Day by Object) (T3)"]
+        query_file = "./sections/queries/Replication Cost History (by Day by Object) (T3).sql"
+        description = """Full list of replicated databases and the volume of credits consumed via the replication service over the last 30 days, broken out by day."""
+        interpretation = """Look for irregularities in the credit consumption or consistently high consumption"""
+[performance]
+    [performance."AutoClustering History & 7-Day Average (T3)"]
+        query_file = "./sections/queries/AutoClustering History & 7-Day Average (T3).sql"
+        description = """Average daily credits consumed by Auto-Clustering grouped by week over the last year."""
+        interpretation = """Look for anomalies in the daily average over the course of the year. Opportunity to investigate the spikes or changes in consumption."""
+    [performance."Data Ingest with Snowpipe and 'Copy' (T1)"]
+        query_file = "./sections/queries/Data Ingest with Snowpipe and 'Copy' (T1).sql"
+        description = """This query returns an aggregated daily summary of all loads for each table in Snowflake showing average file size, total rows, total volume and the ingest method (copy or snowpipe)"""
+        interpretation = """With this high-level information you can determine if file sizes are too small or too big for optimal ingest. If you can map the volume to credit consumption you can determine which tables are consuming more credits per TB loaded."""
+    [performance."Scale Up vs. Out (Size vs. Multi-cluster) (T2)"]
+        query_file = "./sections/queries/Scale Up vs. Out (Size vs. Multi-cluster) (T2).sql"
+        description = """Two separate queries that list out the warehouses and times that could benefit from either a MCW setting OR scaling up to a larger size"""
+        interpretation = """Use this list to determine reconfiguration of a warehouse and the times or users that are causing contention on the warehouse"""
+    [performance."Warehouse Cache Usage (T3)"]
+        query_file = "./sections/queries/Warehouse Cache Usage (T3).sql"
+        description = """Aggregate across all queries broken out by warehouses showing the percentage of data scanned from the warehouse cache."""
+        interpretation = """Look for warehouses that are used from querying/reporting and have a low percentage. This indicates that the warehouse is suspending too quickly"""
+    [performance."Heavy Scanners (T3)"]
+        query_file = "./sections/queries/Heavy Scanners (T3).sql"
+        description = """Ordered list of users that run queries that scan a lot of data."""
+        interpretation = """This is a potential opportunity to train the user or enable clustering."""
+    [performance."Full Table Scans by User (T3)"]
+        query_file = "./sections/queries/Full Table Scans by User (T3).sql"
+        description = """These queries are the list of users that run the most queries with near full table scans and then the list of the queries themselves."""
+        interpretation = """This is a potential opportunity to train the user or enable clustering."""
+    [performance."Top 10 Spillers Remote (T3)"]
+        query_file = "./sections/queries/Top 10 Spillers Remote (T3).sql"
+        description = """Identifies the top 10 worst offending queries in terms of bytes spilled to remote storage."""
+        interpretation = """These queries should most likely be run on larger warehouses that have more local storage and memory."""
+    [performance."Materialized Views History & 7-Day Average (T3)"]
+        query_file = "./sections/queries/Materialized Views History & 7-Day Average (T3).sql"
+        description = """Average daily credits consumed by Materialized Views grouped by week over the last year."""
+        interpretation = """Look for anomalies in the daily average over the course of the year. Opportunity to investigate the spikes or changes in consumption."""
+    [performance."Search Optimization History & 7-Day Average (T3)"]
+        query_file = "./sections/queries/Search Optimization History & 7-Day Average (T3).sql"
+        description = """Average daily credits consumed by Search Optimization grouped by week over the last year."""
+        interpretation = """Look for anomalies in the daily average over the course of the year. Opportunity to investigate the spikes or changes in consumption."""
+    [performance."Snowpipe History & 7-Day Average (T3)"]
+        query_file = "./sections/queries/Snowpipe History & 7-Day Average (T3).sql"
+        description = """Average daily credits consumed by Snowpipe grouped by week over the last year."""
+        interpretation = """Look for anomalies in the daily average over the course of the year. Opportunity to investigate the spikes or changes in consumption."""
+    [performance."Replication History & 7-Day Average (T3)"]
+        query_file = "./sections/queries/Replication History & 7-Day Average (T3).sql"
+        description = """Average daily credits consumed by Replication grouped by week over the last year."""
+        interpretation = """Look for anomalies in the daily average over the course of the year. Opportunity to investigate the spikes or changes in consumption."""
