@@ -211,7 +211,7 @@ def format_query(query, query_desc, context, connection, only_last, params=None)
     if params is None:
         params = st.secrets
     else:
-        params = st.secrets | params
+        params = dict(st.secrets) | params
 
     params.snowflake.password = 'nopasswordsinlogs'
 
