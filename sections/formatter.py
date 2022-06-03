@@ -213,9 +213,10 @@ def format_query(query, query_desc, context, connection, only_last, params=None)
     else:
         params = dict(st.secrets) | params
 
-    params.snowflake.password = 'nopasswordsinlogs'
+
 
     params = munchify(params)
+    params.snowflake.password = 'nopasswordsinlogs'
     query = query_executor(query.format(params=params), connection, only_last)
     context["result"] = query
     context['query_desc'] = query_desc
