@@ -97,7 +97,7 @@ def display_queries(queries: dict, params: dict, connection: ctx):
             only_last = False
 
         params = {}
-        if params in query:
+        if 'params' in query:
             params = query["params"]
 
         futures.append(pool.submit(format_query, query["query"], query_key, sections[query_key], connection, only_last, params))
